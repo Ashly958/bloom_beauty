@@ -1,0 +1,1030 @@
+/* ==========================================================================
+   BLOOM BEAUTY - FIGMA DESIGN SYSTEM TO HTML & CSS
+   Tienda, Login (Roles), Paneles de Administración y Modales
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Paleta de Colores de Figma Bloom Beauty */
+  --pink-primary: #e91e63;
+  --pink-dark: #c2185b;
+  --pink-border: #f472b6;
+  --pink-border-light: #fbcfe8;
+  --pink-header: #fce7f3;
+  --pink-soft: #fdf2f8;
+  --pink-card-admin: #fbe4ee;
+  --pink-accent: #ec4899;
+
+  --text-main: #27272a;
+  --text-muted: #71717a;
+  --text-pink: #be185d;
+  --bg-page: #ffffff;
+  --bg-input: #fdf2f8;
+
+  --font-script: 'Great Vibes', cursive;
+  --font-sans: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 9999px;
+
+  --shadow-sm: 0 2px 8px rgba(233, 30, 99, 0.08);
+  --shadow-md: 0 8px 20px rgba(233, 30, 99, 0.12);
+  --shadow-modal: 0 20px 40px rgba(0, 0, 0, 0.22);
+  --trans: 0.2s ease;
+}
+
+/* Reset y Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* ==========================================================================
+   0. BARRA SUPERIOR DE NAVEGACIÓN ENTRE VISTAS (Demo Switcher)
+   Permite explorar todas las pantallas diseñadas en el Figma
+   ========================================================================== */
+.demo-switcher {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: #18181b;
+  color: #f4f4f5;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  border-bottom: 2px solid var(--pink-primary);
+  flex-wrap: wrap;
+}
+
+.demo-switcher__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #fda4af;
+}
+
+.demo-switcher__tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.demo-tab {
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background-color: #27272a;
+  color: #e4e4e7;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all var(--trans);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.demo-tab:hover {
+  background-color: #3f3f46;
+  color: #ffffff;
+}
+
+.demo-tab.is-active {
+  background-color: var(--pink-primary);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(233, 30, 99, 0.6);
+}
+
+/* Contenedor de Vistas */
+.vista-seccion {
+  display: none;
+  animation: fadeIn 0.3s ease;
+  min-height: calc(100vh - 50px);
+}
+
+.vista-seccion.is-active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ==========================================================================
+   1. CABECERA ROSADA (Bloom Header de Figma)
+   ========================================================================== */
+.bloom-header {
+  background-color: var(--pink-header);
+  border-bottom: 1.5px solid var(--pink-border-light);
+  height: 68px;
+  display: flex;
+  align-items: center;
+}
+
+.bloom-header__in {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.bloom-header__menu {
+  color: var(--pink-primary);
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--trans);
+}
+
+.bloom-header__menu:hover {
+  background-color: rgba(233, 30, 99, 0.1);
+}
+
+.bloom-header__tit {
+  font-family: var(--font-script);
+  font-size: 34px;
+  color: var(--text-main);
+  text-align: center;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(233, 30, 99, 0.1);
+}
+
+.bloom-header__acciones {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-header-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pink-primary);
+  position: relative;
+  transition: all var(--trans);
+}
+
+.btn-header-icon:hover {
+  background-color: rgba(233, 30, 99, 0.12);
+}
+
+.btn-header-icon .badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: var(--pink-primary);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-pill);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--pink-border);
+  overflow: hidden;
+}
+
+.avatar-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ==========================================================================
+   2. VISTA TIENDA: CATÁLOGO DE PRODUCTOS (Figma)
+   ========================================================================== */
+.subtit-tienda {
+  text-align: center;
+  margin: 32px 0 28px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-pink);
+  letter-spacing: 0.02em;
+}
+
+.catalogo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 28px;
+  padding-bottom: 60px;
+}
+
+/* Tarjeta de Producto Bloom (con borde fucsia/magenta característico) */
+.tarjeta-bloom {
+  background-color: #ffffff;
+  border: 2px solid var(--pink-border);
+  border-radius: var(--radius-md);
+  padding: 18px 18px 14px;
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--trans), box-shadow var(--trans);
+  position: relative;
+  overflow: hidden;
+}
+
+.tarjeta-bloom:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--pink-primary);
+}
+
+.tarjeta-bloom__foto {
+  width: 100%;
+  aspect-ratio: 1.1;
+  background-color: var(--pink-soft);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.tarjeta-bloom__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.tarjeta-bloom:hover .tarjeta-bloom__foto img {
+  transform: scale(1.05);
+}
+
+.tarjeta-bloom__nombre {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-top: 14px;
+}
+
+.tarjeta-bloom__desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  line-height: 1.4;
+  flex-grow: 1;
+}
+
+.tarjeta-bloom__precio {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--pink-primary);
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Botón agregar rápido */
+.btn-agregar-carro {
+  background-color: var(--pink-primary);
+  color: #fff;
+  border-radius: var(--radius-pill);
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: background var(--trans);
+}
+
+.btn-agregar-carro:hover {
+  background-color: var(--pink-dark);
+}
+
+/* Acento inferior de tarjeta en Figma */
+.tarjeta-bloom::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background-color: var(--pink-border);
+}
+
+/* ==========================================================================
+   3. VISTA LOGIN (Estilo 3D Cosmetic Studio con Card Dividida de Figma)
+   ========================================================================== */
+.login-container {
+  min-height: calc(100vh - 50px);
+  background: radial-gradient(circle at center, #fff0f5 0%, #fce4ec 50%, #f8bbd0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Elementos decorativos de fondo (maquillaje/pedestales) */
+.login-decor {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.6;
+  pointer-events: none;
+}
+.login-decor--1 {
+  width: 320px;
+  height: 320px;
+  background-color: #f48fb1;
+  top: -60px;
+  left: -80px;
+}
+.login-decor--2 {
+  width: 260px;
+  height: 260px;
+  background-color: #ff80ab;
+  bottom: -40px;
+  right: -50px;
+}
+
+/* Tarjeta Principal de Login */
+.login-card {
+  background-color: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 50px -12px rgba(233, 30, 99, 0.25);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  max-width: 860px;
+  width: 100%;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 255, 255, 0.8);
+  position: relative;
+  z-index: 10;
+}
+
+.login-card__izq {
+  position: relative;
+  background-color: #fce4ec;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.login-card__foto-marco {
+  width: 100%;
+  height: 100%;
+  min-height: 440px;
+  border-top-left-radius: 80px;
+  border-bottom-right-radius: 80px;
+  border-top-right-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  border: 4px solid #ffffff;
+}
+
+.login-card__foto-marco img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.login-card__der {
+  padding: 48px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.login-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 1.5px solid #d4af37;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 10px rgba(212, 175, 55, 0.15);
+  background: radial-gradient(circle, #fffdf8 0%, #fff 100%);
+}
+
+.login-logo span {
+  font-family: var(--font-script);
+  font-size: 26px;
+  color: #c5a059;
+  font-weight: 700;
+}
+
+.login-saludo {
+  font-family: var(--font-script);
+  font-size: 32px;
+  color: var(--text-main);
+  margin-bottom: 20px;
+}
+
+/* Selector de Roles dentro de Login */
+.login-roles {
+  display: flex;
+  gap: 6px;
+  background-color: var(--pink-soft);
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  margin-bottom: 24px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.btn-rol {
+  flex: 1;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+  transition: all var(--trans);
+}
+
+.btn-rol.is-active {
+  background-color: #ffffff;
+  color: var(--pink-primary);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.login-form {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.login-input {
+  width: 100%;
+  padding: 12px 18px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--pink-border-light);
+  background-color: var(--bg-input);
+  font-size: 13.5px;
+  outline: none;
+  transition: all var(--trans);
+  color: var(--text-main);
+}
+
+.login-input:focus {
+  border-color: var(--pink-primary);
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.12);
+}
+
+.btn-ingresar {
+  width: 100%;
+  padding: 13px;
+  border-radius: var(--radius-pill);
+  background-color: var(--pink-primary);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: 8px;
+  box-shadow: 0 6px 16px rgba(233, 30, 99, 0.35);
+  transition: all var(--trans);
+}
+
+.btn-ingresar:hover {
+  background-color: var(--pink-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(233, 30, 99, 0.45);
+}
+
+/* ==========================================================================
+   4. VISTAS DE ADMINISTRADOR (Panel Admin en Figma)
+   ========================================================================== */
+.admin-subtit {
+  text-align: center;
+  font-family: var(--font-script);
+  font-size: 34px;
+  margin: 28px 0 24px;
+  color: var(--text-main);
+}
+
+.admin-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1.5px solid var(--pink-border-light);
+}
+
+.admin-sec-tit {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-pink);
+}
+
+/* Tarjeta con Lápiz de Edición (Panel Admin Productos) */
+.tarjeta-bloom__lapiz {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  background-color: #ffffff;
+  border: 1px solid var(--pink-border);
+  color: var(--pink-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: all var(--trans);
+  z-index: 5;
+}
+
+.tarjeta-bloom__lapiz:hover {
+  background-color: var(--pink-primary);
+  color: #ffffff;
+}
+
+/* Tarjetas de Gestión de Ventas (Figma) */
+.ventas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 60px;
+}
+
+.venta-card {
+  background-color: var(--pink-card-admin);
+  border: 1.5px solid var(--pink-border);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 24px;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.venta-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.venta-card__colaborador {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-pink);
+}
+
+.venta-card__meta {
+  font-size: 13.5px;
+  color: var(--text-muted);
+}
+
+.venta-card__total {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--pink-primary);
+  margin-top: 6px;
+}
+
+.venta-card__prods-caja {
+  background-color: #ffffff;
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  border: 1px solid var(--pink-border-light);
+}
+
+.venta-card__prods-tit {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-pink);
+  margin-bottom: 8px;
+  border-bottom: 1px dashed var(--pink-border-light);
+  padding-bottom: 4px;
+}
+
+.venta-card__prods-lista {
+  list-style: decimal inside;
+  font-size: 13px;
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Tarjetas de Gestión de Personal (Figma) */
+.personal-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 60px;
+}
+
+.personal-card {
+  background-color: var(--pink-card-admin);
+  border: 1.5px solid var(--pink-border);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.personal-card__izq {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.personal-card__lapiz {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  background-color: #ffffff;
+  border: 1.5px solid var(--pink-border);
+  color: var(--pink-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all var(--trans);
+}
+
+.personal-card__lapiz:hover {
+  background-color: var(--pink-primary);
+  color: #ffffff;
+}
+
+.personal-card__nombre {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-pink);
+}
+
+.personal-card__bio {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.personal-card__detalles {
+  display: flex;
+  gap: 28px;
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+.personal-card__dato-tit {
+  font-weight: 600;
+  color: var(--pink-primary);
+}
+
+/* ==========================================================================
+   5. MODALES (VENTANAS EMERGENTES SEGÚN FIGMA)
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(39, 39, 42, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-overlay.is-open {
+  display: flex;
+}
+
+.modal-box {
+  background-color: #ffffff;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--pink-border);
+  box-shadow: var(--shadow-modal);
+  width: 100%;
+  max-width: 580px;
+  padding: 32px 36px;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-box--sm {
+  max-width: 460px;
+}
+
+.modal-cerrar {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: all var(--trans);
+}
+
+.modal-cerrar:hover {
+  background-color: var(--pink-soft);
+  color: var(--pink-primary);
+}
+
+.modal-tit {
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-main);
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+/* Estilos de Formulario en Modales */
+.modal-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.modal-foto-placeholder {
+  width: 100%;
+  aspect-ratio: 1;
+  background-color: #e4e4e7;
+  border-radius: var(--radius-md);
+  border: 2px dashed var(--pink-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  gap: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+}
+
+.modal-foto-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.modal-campos {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modal-campo label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-pink);
+  text-transform: uppercase;
+}
+
+.modal-campo input,
+.modal-campo textarea,
+.modal-campo select {
+  width: 100%;
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--pink-border-light);
+  background-color: var(--bg-input);
+  font-size: 13.5px;
+  outline: none;
+}
+
+.modal-campo input:focus,
+.modal-campo textarea:focus {
+  border-color: var(--pink-primary);
+  background-color: #ffffff;
+}
+
+.modal-acciones {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn-modal-actualizar {
+  flex: 1;
+  background-color: var(--pink-primary);
+  color: #ffffff;
+  padding: 11px 20px;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  font-size: 13.5px;
+  text-align: center;
+  transition: all var(--trans);
+}
+
+.btn-modal-actualizar:hover {
+  background-color: var(--pink-dark);
+}
+
+.btn-modal-eliminar {
+  background-color: transparent;
+  color: var(--pink-primary);
+  border: 1.5px solid var(--pink-border);
+  padding: 11px 20px;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  font-size: 13.5px;
+  transition: all var(--trans);
+}
+
+.btn-modal-eliminar:hover {
+  background-color: #ffe4e6;
+  border-color: var(--pink-primary);
+}
+
+/* Modal Carrito de Compras (Figma) */
+.carrito-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 280px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  padding-right: 6px;
+}
+
+.carrito-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px;
+  background-color: var(--pink-soft);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--pink-border-light);
+}
+
+.carrito-item__foto {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-sm);
+  background-color: #e4e4e7;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.carrito-item__foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.carrito-item__info {
+  flex: 1;
+}
+
+.carrito-item__nombre {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.carrito-item__desc {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.carrito-item__precio {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pink-primary);
+}
+
+.carrito-item__eliminar {
+  color: var(--text-muted);
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  transition: color var(--trans);
+}
+
+.carrito-item__eliminar:hover {
+  color: #ef4444;
+}
+
+.carrito-total-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background-color: var(--pink-primary);
+  color: #ffffff;
+  border-radius: var(--radius-pill);
+  font-size: 15px;
+  font-weight: 700;
+  margin-top: 10px;
+}
+
+/* ==========================================================================
+   6. RESPONSIVIDAD
+   ========================================================================== */
+@media (max-width: 768px) {
+  .login-card {
+    grid-template-columns: 1fr;
+  }
+  
+  .login-card__izq {
+    display: none; /* En pantallas móviles compactas se prioriza el formulario */
+  }
+
+  .venta-card {
+    grid-template-columns: 1fr;
+  }
+
+  .personal-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .personal-card__detalles {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .modal-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .bloom-header__tit {
+    font-size: 26px;
+  }
+}

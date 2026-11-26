@@ -1,0 +1,82 @@
+%% UML – Diagrama de Secuencia Full Stack: HU-01 Registrar venta y pago en el POS
+%% POST /api/v1/ventas  (flujo transaccional más crítico: dinero + inventario + concurrencia)
+sequenceDiagram
+    autonumber
+    actor T as Trabajador(a)
+    participant UI as SPA React<br/>(POS + React Hook Form/Zod)
+    participant F as JwtAuthenticationFilter
+    participant C as VentaController
+    participant S as VentaServiceImpl<br/>@Transactional
+    participant PF as ProcesadorPagoFactory<br/>(Strategy)
+    participant INV as InventarioService
+    participant R as Repositorios JPA
+    participant DB as MySQL 8
+    participant EH as GlobalExceptionHandler
+
+    T->>UI: Agrega productos, descuentos y pagos<br/>(Efectivo $70.000 + Transferencia $50.000)
+    alt Suma de pagos < total (validación en cliente, RNF-04)
+        UI-->>T: "Faltan $X por cubrir" y botón Confirmar deshabilitado
+    else Formulario válido
+        T->>UI: Confirmar cobro
+        UI->>F: POST /api/v1/ventas<br/>Authorization: Bearer JWT · VentaRequest(JSON)
+        alt JWT ausente o vencido
+            F-->>UI: 401 Unauthorized
+        else Token válido
+            F->>C: UsuarioPrincipal(rol=TRABAJADOR)
+            C->>C: @Valid VentaRequest (Bean Validation)
+            alt DTO inválido (cantidad < 1, referencia de 3 caracteres…)
+                C->>EH: MethodArgumentNotValidException
+                EH-->>UI: 400 Bad Request + errores por campo
+            else DTO válido
+                C->>S: registrar(request, vendedor)
+                S->>R: findFirstByEstado(ABIERTA)
+                R->>DB: SELECT … FROM sesiones_caja WHERE estado='ABIERTA'
+                DB-->>R: fila / vacío
+                alt No hay caja abierta (E-4)
+                    S->>EH: CajaNoDisponibleException
+                    EH-->>UI: 409 Conflict {codigo: CAJA_NO_DISPONIBLE}
+                else Caja abierta
+                    S->>R: findByIdIn(productoIds)
+                    R->>DB: SELECT … FROM productos WHERE id IN (…) AND inactivo = false
+                    DB-->>R: productos (con version)
+                    opt Cliente identificado
+                        S->>R: clienteRepository.findById(clienteId)
+                    end
+                    S->>S: PoliticaDescuento.validar() · Venta.recalcularTotales()
+                    loop Por cada pago
+                        S->>PF: obtener(metodo).procesar(pago)
+                        PF-->>S: PagoVenta (cambio o referencia)
+                    end
+                    S->>S: venta.validarPagosCubrenTotal()
+                    alt Pago incompleto / descuento no autorizado / sin referencia
+                        S->>EH: ReglaNegocioException
+                        EH-->>UI: 422 Unprocessable Entity {codigo: PAGO_INCOMPLETO}
+                    else Reglas de negocio OK
+                        S->>R: configuracion FOR UPDATE → BB-000124
+                        S->>R: ventaRepository.save(venta + detalles + pagos)
+                        R->>DB: INSERT ventas, detalle_venta, pagos_venta
+                        loop Por cada línea
+                            S->>INV: registrarMovimiento(SALIDA_VENTA)
+                            INV->>INV: producto.descontarStock(cantidad)
+                            INV->>R: INSERT movimientos_inventario
+                        end
+                        S->>R: flush()
+                        R->>DB: UPDATE productos SET stock_actual=?, version=version+1<br/>WHERE id=? AND version=?
+                        alt 0 filas actualizadas: otra venta tomó la última unidad (RNF-02)
+                            DB-->>R: 0 rows
+                            R->>EH: ObjectOptimisticLockingFailureException → ROLLBACK
+                            EH-->>UI: 409 Conflict {codigo: STOCK_AGOTADO}
+                            UI-->>T: "Stock agotado", refresca el carrito
+                        else 1 fila actualizada por producto
+                            DB-->>R: OK
+                            S-)S: publishEvent(VentaRegistradaEvent)
+                            S-->>C: VentaResponse
+                            Note over S,DB: COMMIT de toda la transacción
+                            C-->>UI: 201 Created · Location /api/v1/ventas/124
+                            UI-->>T: Comprobante BB-000124 (imprimir / PDF) y carrito vacío
+                        end
+                    end
+                end
+            end
+        end
+    end

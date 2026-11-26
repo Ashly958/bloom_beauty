@@ -1,0 +1,30 @@
+%% C4 – Nivel 2: Diagrama de Contenedores del Sistema Bloom Beauty
+flowchart TB
+    admin["<b>Administrador(a)</b><br/>[Persona]"]
+    trab["<b>Trabajador(a)</b><br/>[Persona]"]
+
+    subgraph limite["Sistema Bloom Beauty  [Límite del sistema]"]
+        direction TB
+        proxy["<b>Proxy inverso</b><br/>[Contenedor: Nginx 1.27]<br/><br/>Termina TLS 1.2+, redirige HTTP→HTTPS,<br/>enruta /api al backend y / a la SPA."]
+        spa["<b>Aplicación web SPA</b><br/>[Contenedor: React 18 + Vite, TanStack Query,<br/>React Hook Form + Zod]<br/><br/>POS, catálogo, caja, inventario,<br/>clientes y reportes en el navegador."]
+        api["<b>API REST</b><br/>[Contenedor: Java 17 + Spring Boot 3,<br/>Spring Security, Spring Data JPA]<br/><br/>Reglas de negocio, autenticación JWT,<br/>transacciones y contrato OpenAPI /api/v1."]
+        db[("<b>Base de datos</b><br/>[Contenedor: MySQL 8.0 – InnoDB, utf8mb4]<br/><br/>18 tablas: catálogo, ventas, pagos,<br/>kárdex, caja, gastos y auditoría.")]
+    end
+
+    smtp["<b>Servicio de correo SMTP</b><br/>[Sistema externo]"]
+
+    admin -- "Usa<br/>[HTTPS :443]" --> proxy
+    trab -- "Usa<br/>[HTTPS :443]" --> proxy
+    proxy -- "Entrega archivos estáticos<br/>[HTTP :80, red interna]" --> spa
+    spa -- "Llama la API con Bearer JWT<br/>[JSON/HTTPS – vía proxy]" --> proxy
+    proxy -- "Reenvía /api/**<br/>[HTTP :8080, red interna]" --> api
+    api -- "Lee y escribe<br/>[JDBC / MySQL :3306, pool Hikari]" --> db
+    api -- "Envía correo<br/>[SMTP/TLS :587]" --> smtp
+
+    classDef persona fill:#08427B,stroke:#052E56,color:#ffffff
+    classDef contenedor fill:#438DD5,stroke:#2E6295,color:#ffffff
+    classDef externo fill:#8C8C8C,stroke:#6B6B6B,color:#ffffff
+    class admin,trab persona
+    class proxy,spa,api,db contenedor
+    class smtp externo
+    style limite fill:#ffffff,stroke:#1168BD,stroke-width:2px,stroke-dasharray:6 4,color:#1168BD

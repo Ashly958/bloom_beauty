@@ -1,0 +1,66 @@
+server:
+  port: 8080
+  forward-headers-strategy: framework   # respeta X-Forwarded-* del proxy inverso Nginx
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: bloom-beauty-api
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/bloom_beauty?useSSL=false&serverTimezone=America/Bogota&allowPublicKeyRetrieval=true}
+    username: ${DB_USER:bloom_app}
+    password: ${DB_PASSWORD:cambiar}
+    hikari:
+      maximum-pool-size: 20          # RNF-02: 50 peticiones/s en hora pico
+      minimum-idle: 5
+      connection-timeout: 3000
+  jpa:
+    open-in-view: false              # evita consultas LAZY fuera de la capa de servicio
+    hibernate:
+      ddl-auto: none                 # el esquema lo gobierna el script SQL versionado
+    properties:
+      hibernate:
+        jdbc.time_zone: America/Bogota
+        default_batch_fetch_size: 50 # mitiga N+1 al recorrer colecciones LAZY
+        order_inserts: true
+        order_updates: true
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USER:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+bloom:
+  jwt:
+    secret: ${JWT_SECRET:cambiar-este-secreto-por-uno-de-al-menos-32-bytes-0123456789}
+    vigencia: PT8H                   # RNF-06: JWT de 8 h
+  cors:
+    origenes: ${CORS_ORIGENES:http://localhost:5173}
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:5173}
+  mail:
+    remitente: ${MAIL_REMITENTE:no-responder@bloombeauty.co}
+  admin:                             # primer administrador (se crea solo si no existe)
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    mail:
+      enabled: false                 # el SMTP no debe tumbar el healthcheck del contenedor
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

@@ -1,0 +1,10 @@
+.env
+backend/target/
+frontend/node_modules/
+frontend/dist/
+deploy/certbot/
+*.log
+.idea/
+.vscode/
+~$*
+_to_delete/

@@ -1,0 +1,26 @@
+%% C4 – Nivel 1: Diagrama de Contexto del Sistema Bloom Beauty
+%% Notación C4 dibujada con flowchart de Mermaid (diagramación como código).
+flowchart TB
+    admin["<b>Administrador(a)</b><br/>[Persona]<br/><br/>Dueña de la tienda. Gestiona catálogo,<br/>precios, inventario, usuarios, cierre<br/>de caja, gastos y reportes."]
+    trab["<b>Trabajador(a)</b><br/>[Persona]<br/><br/>Vendedora del punto de venta. Abre la<br/>caja, factura ventas y consulta<br/>catálogo, inventario y clientes."]
+
+    sistema["<b>Sistema Bloom Beauty</b><br/>[Sistema de software]<br/><br/>POS con pago mixto, inventario con alertas,<br/>clientes, proveedores, caja diaria,<br/>gastos y reportes."]
+
+    smtp["<b>Servicio de correo SMTP</b><br/>[Sistema externo – Gmail / SendGrid]<br/><br/>Entrega el enlace de recuperación<br/>de contraseña (RF-03)."]
+    banco["<b>Datáfono y banca móvil</b><br/>[Sistema externo – Redeban / Bancolombia]<br/><br/>Procesa pagos con tarjeta y<br/>transferencias de la clienta."]
+    clienta["<b>Clienta</b><br/>[Persona externa]<br/><br/>Compra en la tienda; recibe el<br/>comprobante BB-XXXXXX."]
+
+    admin -- "Gestiona catálogo, caja,<br/>usuarios y reportes<br/>[HTTPS]" --> sistema
+    trab -- "Registra ventas y cobros,<br/>abre caja<br/>[HTTPS]" --> sistema
+    sistema -- "Envía enlace de recuperación<br/>al correo del usuario<br/>[SMTP/TLS :587]" --> smtp
+    trab -. "Cobra y digita la<br/>referencia del voucher" .-> banco
+    sistema -. "Comprobante impreso / PDF" .-> clienta
+
+    classDef persona fill:#08427B,stroke:#052E56,color:#ffffff
+    classDef sistemaC4 fill:#1168BD,stroke:#0B4884,color:#ffffff
+    classDef externo fill:#8C8C8C,stroke:#6B6B6B,color:#ffffff
+    classDef personaExt fill:#6B6B6B,stroke:#4D4D4D,color:#ffffff
+    class admin,trab persona
+    class sistema sistemaC4
+    class smtp,banco externo
+    class clienta personaExt

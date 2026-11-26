@@ -1,0 +1,87 @@
+# Bloom Beauty - despliegue de producción en un VPS con Docker Compose
+# Ver docs/hito-2/uml/03-despliegue.mmd y ADR-004.
+#   docker compose --env-file .env up -d --build
+services:
+
+  proxy:                       # Nginx: proxy inverso + terminación TLS (Let's Encrypt)
+    image: nginx:1.27-alpine
+    container_name: bloom-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx/bloom.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./deploy/certbot/conf:/etc/letsencrypt:ro
+      - ./deploy/certbot/www:/var/www/certbot:ro
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+    networks: [publica, interna]
+
+  certbot:                     # renueva el certificado SSL cada 12 h
+    image: certbot/certbot
+    volumes:
+      - ./deploy/certbot/conf:/etc/letsencrypt
+      - ./deploy/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done'"
+    restart: unless-stopped
+
+  frontend:                    # SPA React 18 + Vite compilada y servida por Nginx
+    build: ./frontend
+    container_name: bloom-frontend
+    expose: ["80"]
+    restart: unless-stopped
+    networks: [interna]
+
+  backend:                     # API REST Spring Boot 3 (Java 17)
+    build: ./backend
+    container_name: bloom-backend
+    expose: ["8080"]
+    environment:
+      DB_URL: jdbc:mysql://db:3306/bloom_beauty?useSSL=false&serverTimezone=America/Bogota&allowPublicKeyRetrieval=true
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGENES: https://${DOMINIO}
+      FRONTEND_URL: https://${DOMINIO}
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASSWORD: ${SMTP_PASSWORD}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      TZ: America/Bogota
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [interna, salida]  # "salida": solo para enviar correo SMTP; no publica puertos
+
+  db:                          # MySQL 8, solo accesible desde la red interna
+    image: mysql:8.0
+    container_name: bloom-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: bloom_beauty
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: America/Bogota
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_spanish_ci"]
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 10
+    restart: unless-stopped
+    networks: [interna]
+
+volumes:
+  mysql_data:
+
+networks:
+  publica:
+  salida:
+  interna:
+    internal: true             # la base de datos no tiene salida ni entrada desde internet

@@ -1,0 +1,50 @@
+%% UML – Diagrama de Despliegue de producción de Bloom Beauty
+%% Nodos «device» / «executionEnvironment» / «artifact» representados con subgraph.
+flowchart LR
+    subgraph pc["«device» PC / tablet de caja<br/>Windows 11 · ≥ 768 px"]
+        nav["«executionEnvironment»<br/>Chrome / Edge / Firefox"]
+        lector["«device» Lector de código<br/>de barras (USB-HID)"]
+        impr["«device» Impresora térmica<br/>80 mm"]
+    end
+
+    subgraph vps["«device» VPS Ubuntu Server 24.04 LTS<br/>2 vCPU · 4 GB RAM · 80 GB SSD · IP pública<br/>Firewall UFW: solo 22, 80, 443"]
+        subgraph docker["«executionEnvironment» Docker Engine 27 + Docker Compose"]
+            subgraph red_pub["red: publica"]
+                proxy["«container» bloom-proxy<br/>nginx:1.27-alpine<br/>:80 → 301 HTTPS · :443 TLS 1.2/1.3"]
+            end
+            certbot["«container» certbot<br/>renovación Let's Encrypt"]
+            subgraph red_int["red: interna (internal: true)"]
+                fe["«container» bloom-frontend<br/>nginx:alpine<br/>«artifact» dist/ (React 18 + Vite)"]
+                be["«container» bloom-backend<br/>eclipse-temurin:17-jre<br/>«artifact» bloom-beauty-api.jar :8080<br/>+ red salida (solo SMTP)"]
+                db[("«container» bloom-db<br/>mysql:8.0 :3306")]
+            end
+            vol[("«volume» mysql_data")]
+            certs[("«volume» /etc/letsencrypt")]
+        end
+    end
+
+    le["«external» Let's Encrypt CA"]
+    smtp["«external» SMTP<br/>smtp.gmail.com:587"]
+    gh["«external» GitHub<br/>repositorio + imágenes"]
+
+    lector -. teclado .-> nav
+    nav -. imprime .-> impr
+    nav == "HTTPS :443<br/>bloombeauty.co" ==> proxy
+    proxy -- "HTTP :80 /" --> fe
+    proxy -- "HTTP :8080 /api/**" --> be
+    be -- "JDBC :3306" --> db
+    db --- vol
+    proxy --- certs
+    certbot --- certs
+    certbot -. "ACME HTTP-01" .-> le
+    be -. "SMTP/TLS" .-> smtp
+    gh -. "git pull + docker compose up -d --build" .-> docker
+
+    classDef nodo fill:#FCE4EC,stroke:#C2185B,color:#000
+    classDef cont fill:#438DD5,stroke:#2E6295,color:#fff
+    classDef ext fill:#8C8C8C,stroke:#6B6B6B,color:#fff
+    classDef dev fill:#FFF8E1,stroke:#B8860B,color:#000
+    class proxy,fe,be,db,certbot cont
+    class le,smtp,gh ext
+    class nav,lector,impr dev
+    class vol,certs nodo

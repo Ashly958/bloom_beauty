@@ -1,0 +1,239 @@
+%% UML – Diagrama de Clases de Dominio (paquete co.bloombeauty.domain)
+classDiagram
+    direction TB
+
+    class Rol {
+        -Integer id
+        -String nombre
+        -String descripcion
+        +esAdministrador() boolean
+    }
+    class Usuario {
+        -Long id
+        -TipoDocumentoUsuario tipoDocumento
+        -String numeroDocumento
+        -String nombres
+        -String apellidos
+        -String email
+        -String passwordHash
+        -EstadoUsuario estado
+        -int intentosFallidos
+        -LocalDateTime bloqueadoHasta
+        +estaBloqueado(LocalDateTime) boolean
+        +registrarIntentoFallido(LocalDateTime) void
+        +registrarAccesoExitoso(LocalDateTime) void
+    }
+    class TokenRecuperacion {
+        -Long id
+        -String token
+        -LocalDateTime expiraEn
+        -boolean usado
+        +esValido(LocalDateTime) boolean
+        +marcarUsado() void
+    }
+    class Categoria {
+        -Integer id
+        -String nombre
+        -boolean inactivo
+    }
+    class Marca {
+        -Integer id
+        -String nombre
+        -boolean inactivo
+    }
+    class Producto {
+        -Long id
+        -String codigoBarras
+        -String nombre
+        -String tono
+        -BigDecimal precioCosto
+        -BigDecimal precioVenta
+        -BigDecimal porcentajeIva
+        -int stockActual
+        -int stockMinimo
+        -LocalDate fechaVencimiento
+        -boolean inactivo
+        -Integer version
+        +descontarStock(int) int
+        +incrementarStock(int) int
+        +tieneStockBajo() boolean
+        +vencePronto(LocalDate, int) boolean
+        +inactivar() void
+    }
+    class Proveedor {
+        -Long id
+        -String nit
+        -String razonSocial
+        -String telefono
+        -boolean inactivo
+    }
+    class ProductoProveedor {
+        -ProductoProveedorId id
+        -BigDecimal costoReferencia
+        -boolean esPrincipal
+    }
+    class Cliente {
+        -Long id
+        -TipoDocumentoCliente tipoDocumento
+        -String numeroDocumento
+        -String nombres
+        -String apellidos
+        -String telefono
+        -boolean aceptaDatos
+    }
+    class SesionCaja {
+        -Long id
+        -LocalDateTime fechaApertura
+        -LocalDateTime fechaCierre
+        -BigDecimal montoInicial
+        -BigDecimal totalVentasEfectivo
+        -BigDecimal totalVentasTransferencia
+        -BigDecimal totalVentasTarjeta
+        -BigDecimal totalGastosEfectivo
+        -BigDecimal diferencia
+        -EstadoCaja estado
+        -Integer version
+        +abrir(Usuario, BigDecimal, LocalDateTime)$ SesionCaja
+        +registrarIngreso(TipoMetodoPago, BigDecimal) void
+        +calcularEfectivoEsperado() BigDecimal
+        +cerrar(Usuario, BigDecimal, BigDecimal, BigDecimal, String, BigDecimal, LocalDateTime) void
+    }
+    class Venta {
+        -Long id
+        -String numeroFactura
+        -LocalDateTime fecha
+        -BigDecimal subtotal
+        -BigDecimal descuentoTotal
+        -BigDecimal ivaTotal
+        -BigDecimal total
+        -EstadoVenta estado
+        -String motivoAnulacion
+        +agregarDetalle(DetalleVenta) void
+        +agregarPago(PagoVenta) void
+        +recalcularTotales() void
+        +validarPagosCubrenTotal() void
+        +anular(String, Usuario, LocalDateTime) void
+    }
+    class DetalleVenta {
+        -Long id
+        -int cantidad
+        -BigDecimal precioUnitario
+        -BigDecimal porcentajeDescuento
+        -BigDecimal subtotal
+        +de(Producto, int, BigDecimal)$ DetalleVenta
+        +getIvaIncluido() BigDecimal
+    }
+    class MetodoPago {
+        -Integer id
+        -TipoMetodoPago nombre
+        -boolean requiereReferencia
+        -boolean activo
+    }
+    class PagoVenta {
+        -Long id
+        -BigDecimal monto
+        -BigDecimal montoRecibido
+        -BigDecimal cambio
+        -String referencia
+    }
+    class MovimientoInventario {
+        -Long id
+        -TipoMovimiento tipo
+        -int cantidad
+        -int stockAnterior
+        -int stockResultante
+        -String motivo
+        -LocalDateTime fecha
+        +registrar(Producto, Usuario, TipoMovimiento, int, int, String, LocalDateTime)$ MovimientoInventario
+    }
+    class Compra {
+        -Long id
+        -String numeroFacturaProveedor
+        -LocalDate fechaCompra
+        -BigDecimal total
+        +agregarDetalle(DetalleCompra) void
+    }
+    class DetalleCompra {
+        -Long id
+        -int cantidad
+        -BigDecimal costoUnitario
+        -BigDecimal subtotal
+    }
+    class Gasto {
+        -Long id
+        -CategoriaGasto categoria
+        -String descripcion
+        -BigDecimal monto
+        -LocalDate fecha
+    }
+
+    class EstadoVenta {
+        <<enumeration>>
+        PAGADA
+        ANULADA
+    }
+    class EstadoCaja {
+        <<enumeration>>
+        ABIERTA
+        CERRADA
+    }
+    class TipoMetodoPago {
+        <<enumeration>>
+        EFECTIVO
+        TRANSFERENCIA
+        TARJETA_DEBITO
+        TARJETA_CREDITO
+    }
+    class TipoMovimiento {
+        <<enumeration>>
+        ENTRADA_COMPRA
+        SALIDA_VENTA
+        AJUSTE_POSITIVO
+        AJUSTE_NEGATIVO
+        REINTEGRO_ANULACION
+    }
+    class EstadoUsuario {
+        <<enumeration>>
+        ACTIVO
+        INACTIVO
+    }
+    class CategoriaGasto {
+        <<enumeration>>
+        ARRIENDO
+        SERVICIOS
+        NOMINA
+        INSUMOS
+        PUBLICIDAD
+        TRANSPORTE
+        OTRO
+    }
+
+    Rol "1" <-- "0..*" Usuario : rol
+    Usuario "1" <-- "0..*" TokenRecuperacion : usuario
+    Categoria "1" <-- "0..*" Producto : categoria
+    Marca "1" <-- "0..*" Producto : marca
+    Producto "1" *-- "0..*" ProductoProveedor : proveedores
+    Proveedor "1" <-- "0..*" ProductoProveedor : proveedor
+    Usuario "1" <-- "0..*" SesionCaja : abre / cierra
+    SesionCaja "1" <-- "0..*" Venta : sesionCaja
+    Usuario "1" <-- "0..*" Venta : vendedor
+    Cliente "0..1" <-- "0..*" Venta : cliente
+    Venta "1" *-- "1..*" DetalleVenta : detalles
+    Venta "1" *-- "1..4" PagoVenta : pagos
+    Producto "1" <-- "0..*" DetalleVenta : producto
+    MetodoPago "1" <-- "0..*" PagoVenta : metodoPago
+    Producto "1" <-- "0..*" MovimientoInventario : producto
+    Venta "0..1" <-- "0..*" MovimientoInventario : venta
+    Compra "0..1" <-- "0..*" MovimientoInventario : compra
+    Proveedor "1" <-- "0..*" Compra : proveedor
+    Compra "1" *-- "1..*" DetalleCompra : detalles
+    Producto "1" <-- "0..*" DetalleCompra : producto
+    SesionCaja "0..1" <-- "0..*" Gasto : sesionCaja
+    MetodoPago "1" <-- "0..*" Gasto : metodoPago
+
+    Venta ..> EstadoVenta
+    SesionCaja ..> EstadoCaja
+    MetodoPago ..> TipoMetodoPago
+    MovimientoInventario ..> TipoMovimiento
+    Usuario ..> EstadoUsuario
+    Gasto ..> CategoriaGasto

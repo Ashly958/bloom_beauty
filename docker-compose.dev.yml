@@ -1,0 +1,23 @@
+# Entorno de DESARROLLO: solo la base de datos MySQL 8 en tu PC.
+#   docker compose -f docker-compose.dev.yml up -d
+# Crea la BD bloom_beauty con los scripts de /database y el usuario bloom_app / cambiar,
+# que son los valores por defecto de backend/src/main/resources/application.yml.
+services:
+  db:
+    image: mysql:8.0
+    container_name: bloom-db-dev
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: bloom_beauty
+      MYSQL_USER: bloom_app
+      MYSQL_PASSWORD: cambiar
+      TZ: America/Bogota
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_spanish_ci"]
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_dev:/var/lib/mysql
+      - ./database:/docker-entrypoint-initdb.d:ro
+
+volumes:
+  mysql_dev:

@@ -1,0 +1,90 @@
+%% C4 – Nivel 3: Diagrama de Componentes del contenedor API REST (Spring Boot)
+%%{init: {'themeVariables': {'fontSize': '22px'}, 'flowchart': {'nodeSpacing': 25, 'rankSpacing': 45}}}%%
+flowchart TB
+    spa["<b>SPA React</b><br/>[Contenedor]"]
+
+    subgraph api["API REST – Spring Boot 3  [Contenedor]"]
+        direction TB
+
+        subgraph seg["security / config"]
+            filtro["<b>JwtAuthenticationFilter</b><br/>[Filtro de seguridad]<br/>Valida el Bearer JWT y carga<br/>UsuarioPrincipal en el contexto"]
+            secconf["<b>SecurityConfig + @PreAuthorize</b><br/>[Spring Security]<br/>Stateless, BCrypt, roles<br/>ADMINISTRADOR / TRABAJADOR"]
+            jwt["<b>JwtService</b><br/>[Componente]<br/>Emite y valida JWT HS256 (8 h)"]
+        end
+
+        subgraph ctrl["controller  (@RestController)"]
+            authC["AuthController<br/>/auth"]
+            ventaC["VentaController<br/>/ventas"]
+            prodC["ProductoController<br/>/productos"]
+            cajaC["CajaController<br/>/cajas"]
+            cliC["ClienteController<br/>/clientes"]
+            invC["InventarioController<br/>/inventario"]
+        end
+
+        advice["<b>GlobalExceptionHandler</b><br/>[@RestControllerAdvice]<br/>Excepciones → ProblemDetail<br/>400 · 401 · 403 · 404 · 409 · 422"]
+
+        subgraph srv["service  (@Service, @Transactional)"]
+            authS["AuthService"]
+            ventaS["<b>VentaService</b><br/>caso de uso HU-01"]
+            prodS["ProductoService"]
+            cajaS["CajaService"]
+            cliS["ClienteService"]
+            invS["InventarioService<br/>kárdex + alertas"]
+            pago["<b>ProcesadorPagoFactory</b><br/>[Factory + Strategy]<br/>Efectivo · Con referencia"]
+            desc["PoliticaDescuento"]
+            num["NumeradorFacturas<br/>BB-000001 (FOR UPDATE)"]
+            notif["NotificacionService<br/>(SMTP)"]
+        end
+
+        subgraph evt["event  (Observer)"]
+            audL["AuditoriaVentasListener<br/>@TransactionalEventListener"]
+            stockL["AlertaStockListener<br/>@Async"]
+        end
+
+        mapper["<b>dto + mapper</b><br/>Records de request/response<br/>ProductoMapper, VentaMapper"]
+
+        subgraph repo["repository  (Spring Data JPA)"]
+            repos["<b>JpaRepository</b><br/>Producto · Venta · SesionCaja · Usuario<br/>Cliente · MetodoPago · Configuracion<br/>MovimientoInventario · Auditoria …"]
+        end
+
+        dom["<b>domain</b><br/>[@Entity + Enum]<br/>Venta, DetalleVenta, PagoVenta,<br/>Producto (@Version), SesionCaja …"]
+    end
+
+    db[("<b>MySQL 8</b><br/>[Contenedor]")]
+    smtp["<b>SMTP</b><br/>[Sistema externo]"]
+
+    spa -- "JSON/HTTPS + Bearer JWT" --> filtro
+    filtro --> jwt
+    filtro --> ctrl
+    secconf -.-> filtro
+    ctrl -. "excepciones" .-> advice
+    authC --> authS
+    ventaC --> ventaS
+    prodC --> prodS
+    cajaC --> cajaS
+    cliC --> cliS
+    invC --> invS
+    authS --> jwt
+    authS --> notif
+    ventaS --> pago
+    ventaS --> desc
+    ventaS --> num
+    ventaS --> invS
+    prodS --> invS
+    ventaS -- "publishEvent(VentaRegistradaEvent)" --> evt
+    srv --> mapper
+    srv --> repos
+    evt --> repos
+    repos --> dom
+    repos -- "JDBC / Hibernate 6" --> db
+    notif -- "SMTP/TLS" --> smtp
+
+    classDef comp fill:#85BBF0,stroke:#5D82A8,color:#000000
+    classDef cont fill:#438DD5,stroke:#2E6295,color:#ffffff
+    classDef ext fill:#8C8C8C,stroke:#6B6B6B,color:#ffffff
+    classDef clave fill:#F8BBD0,stroke:#C2185B,color:#000000
+    class filtro,secconf,jwt,authC,prodC,cajaC,cliC,invC,authS,prodS,cajaS,cliS,invS,desc,num,notif,audL,stockL,mapper,repos,dom comp
+    class ventaC,ventaS,pago,advice clave
+    class spa,db cont
+    class smtp ext
+    style api fill:#ffffff,stroke:#438DD5,stroke-width:2px,stroke-dasharray:6 4
